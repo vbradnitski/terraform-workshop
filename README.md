@@ -1,128 +1,161 @@
-# Terraform Hackathon: Запускаем сайт в GCP за 45 минут
+# Terraform Hackathon: Deploy a Website on GCP in 45 Minutes
 
-Добро пожаловать! За следующие 45 минут вы развернёте настоящую облачную инфраструктуру в Google Cloud Platform с помощью Terraform и увидите свой сайт в интернете.
+Welcome! Over the next 45 minutes you'll deploy real cloud infrastructure on Google Cloud Platform using Terraform and see your website live on the internet.
 
-## Что мы создадим
+## What We'll Build
 
 ```
-Интернет
+Internet
     │
     ▼
-[Firewall Rule]  ← разрешает трафик на порт 80
+[Firewall Rule]  ← allows traffic on port 80
     │
     ▼
-[Compute Engine VM]  ← виртуальная машина с Nginx
-    │  (внутри VPC Network)
+[Compute Engine VM]  ← virtual machine running Nginx
+    │  (inside a VPC Network)
     ▼
-"Hello from Team [Ваша команда]!"
+"Hello from Team [Your Team]!"
 ```
 
-**3 ресурса = 1 работающий сайт.**
+**3 resources = 1 working website.**
 
 ---
 
-## Шаг 0: Откройте Google Cloud Shell
+## Prerequisites (local setup only)
 
-Перейдите по ссылке: **https://shell.cloud.google.com**
+If you're using **Google Cloud Shell** — skip this section, everything is already installed there.
 
-> Google Cloud Shell — это терминал прямо в браузере. Там уже установлен Terraform, и вы уже авторизованы в GCP. Никаких дополнительных установок не нужно!
+If you want to work **locally on macOS**, install the following:
 
-Проверьте, что Terraform работает:
+### Install Google Cloud CLI
+
+```bash
+brew install --cask google-cloud-sdk
+```
+
+Then authenticate:
+```bash
+gcloud init
+gcloud auth application-default login
+```
+
+### Install Terraform
+
+```bash
+brew tap hashicorp/tap
+brew install hashicorp/tap/terraform
+```
+
+Verify both are installed:
+```bash
+gcloud version
+terraform version
+```
+
+---
+
+## Step 0: Open Google Cloud Shell
+
+Go to: **https://shell.cloud.google.com**
+
+> Google Cloud Shell is a terminal right in your browser. Terraform is already installed and you're already authenticated with GCP. No additional setup needed!
+
+Verify Terraform is working:
 ```bash
 terraform version
 ```
 
 ---
 
-## Шаг 1: Склонируйте репозиторий
+## Step 1: Clone the Repository
 
 ```bash
 git clone https://github.com/vbradnitski/terraform-workshop.git
 cd terraform-workshop
 ```
 
-Откройте редактор файлов:
+Open the file editor:
 ```bash
 cloudshell edit main.tf
 ```
 
 ---
 
-## Шаг 2: Ознакомьтесь со структурой проекта
+## Step 2: Explore the Project Structure
 
-| Файл | Описание |
-|------|----------|
-| `main.tf` | **Ваша задача** — здесь 4 места, которые нужно заполнить |
-| `outputs.tf` | Готов — выведет ссылку на ваш сайт после `apply` |
-| `versions.tf` | Готов — указывает версии Terraform и провайдера |
-| `CHEATSHEET.md` | Шпаргалка по командам |
+| File | Description |
+|------|-------------|
+| `main.tf` | **Your task** — contains 4 places to fill in |
+| `outputs.tf` | Ready — prints your website URL after `apply` |
+| `versions.tf` | Ready — specifies Terraform and provider versions |
+| `CHEATSHEET.md` | Command reference and common errors |
 
 ---
 
-## Шаг 3: Выполните задания в main.tf
+## Step 3: Complete the TODOs in main.tf
 
-Откройте `main.tf` и найдите все места с `TODO`. Их 4:
+Open `main.tf` and find all `TODO` comments. There are 4:
 
-### TODO 1 — Укажите Project ID
+### TODO 1 — Set Your Project ID
 
-Найдите ваш Project ID:
+Find your Project ID:
 ```bash
 gcloud config get-value project
 ```
 
-Замените `УКАЖИ_СВОЙ_PROJECT_ID` на реальный ID проекта.
+Replace `YOUR_PROJECT_ID` with your actual project ID.
 
-### TODO 2 — Укажите порт для HTTP
+### TODO 2 — Set the HTTP Port
 
-В блоке `google_compute_firewall` замените `"КАКОЙ_ПОРТ"` на правильный порт.
+In the `google_compute_firewall` block, replace `"WHICH_PORT"` with the correct port.
 
 <details>
-<summary>Подсказка (нажмите, если затрудняетесь)</summary>
-HTTP работает на порту <code>80</code>
+<summary>Hint (click if you're stuck)</summary>
+HTTP runs on port <code>80</code>
 </details>
 
-### TODO 3 — Добавьте тег к виртуальной машине
+### TODO 3 — Add a Tag to the VM
 
-Правило файрвола применяется только к машинам, у которых есть определённый тег (`target_tags`). Посмотрите, какой тег стоит в `google_compute_firewall`, и укажите его же в `tags` для виртуальной машины.
+The firewall rule only applies to machines that have a specific tag (`target_tags`). Check which tag is set in `google_compute_firewall` and use the same tag in `tags` for the virtual machine.
 
-### TODO 4 — Впишите имя вашей команды
+### TODO 4 — Enter Your Team Name
 
-В `metadata_startup_script` замените `Название Вашей Команды` на имя вашей команды. Это имя появится на сайте!
+In `metadata_startup_script`, replace `Your Team Name` with your team's name. This name will appear on the website!
 
 ---
 
-## Шаг 4: Инициализируйте Terraform
+## Step 4: Initialize Terraform
 
 ```bash
 terraform init
 ```
 
-Terraform скачает провайдер Google Cloud. Вы увидите:
+Terraform will download the Google Cloud provider. You should see:
 ```
 Terraform has been successfully initialized!
 ```
 
 ---
 
-## Шаг 5: Проверьте план
+## Step 5: Review the Plan
 
 ```bash
 terraform plan
 ```
 
-Terraform покажет, что он **собирается** создать (ничего ещё не создаётся!). Должно быть `3 to add`.
+Terraform will show what it **plans** to create (nothing is created yet!). You should see `3 to add`.
 
 ---
 
-## Шаг 6: Создайте инфраструктуру!
+## Step 6: Create the Infrastructure!
 
 ```bash
 terraform apply
 ```
 
-Terraform спросит подтверждение — введите `yes`.
+Terraform will ask for confirmation — type `yes`.
 
-Подождите 1-2 минуты. По завершении вы увидите:
+Wait 1-2 minutes. When done, you'll see:
 
 ```
 Apply complete! Resources: 3 added.
@@ -134,44 +167,44 @@ website_url = "http://xx.xx.xx.xx"
 
 ---
 
-## Шаг 7: Откройте ваш сайт!
+## Step 7: Open Your Website!
 
-Скопируйте `website_url` из вывода и откройте в браузере.
+Copy the `website_url` from the output and open it in your browser.
 
-> Если сайт не открывается сразу — подождите ещё 1-2 минуты. Машина только запустилась и устанавливает Nginx.
+> If the site doesn't load immediately — wait another 1-2 minutes. The machine just started and is installing Nginx.
 
-Также можно посмотреть ссылку в любое время:
+You can also check the URL at any time:
 ```bash
 terraform output website_url
 ```
 
 ---
 
-## Шаг 8: Удалите инфраструктуру
+## Step 8: Destroy the Infrastructure
 
-Это важный шаг — так вы не тратите деньги на облако после хакатона!
+This is an important step — it ensures you don't get charged for cloud resources after the hackathon!
 
 ```bash
 terraform destroy
 ```
 
-Введите `yes`. Terraform удалит все 3 ресурса за несколько секунд.
+Type `yes`. Terraform will delete all 3 resources in seconds.
 
-**Вот в чём магия Infrastructure as Code:** создать инфраструктуру и удалить её так же просто, как запустить одну команду.
-
----
-
-## Бонусные задания (если остаётся время)
-
-1. **Измените HTML**: Обновите текст в `metadata_startup_script`, затем выполните `terraform apply` снова. Что произошло?
-
-2. **Добавьте второй тег**: Добавьте в `tags` машины ещё один тег `["web-server", "hackathon"]` и запустите `terraform plan`. Сколько ресурсов изменится?
-
-3. **Изучите state**: Запустите `cat terraform.tfstate` — это файл, в котором Terraform хранит информацию о созданных ресурсах.
+**This is the magic of Infrastructure as Code:** creating and destroying infrastructure is as simple as running a single command.
 
 ---
 
-## Нужна помощь?
+## Bonus Challenges (if you have time)
 
-- Смотрите `CHEATSHEET.md` — там описаны частые ошибки и их решения
-- Документация Terraform: https://registry.terraform.io/providers/hashicorp/google/latest/docs
+1. **Change the HTML**: Update the text in `metadata_startup_script`, then run `terraform apply` again. What happened?
+
+2. **Add a second tag**: Add another tag to the VM's `tags` — `["web-server", "hackathon"]` — and run `terraform plan`. How many resources will change?
+
+3. **Explore the state**: Run `cat terraform.tfstate` — this is the file Terraform uses to track information about created resources.
+
+---
+
+## Need Help?
+
+- Check `CHEATSHEET.md` — it covers common errors and how to fix them
+- Terraform documentation: https://registry.terraform.io/providers/hashicorp/google/latest/docs
