@@ -1,54 +1,45 @@
 # =============================================================================
-# TERRAFORM HACKATHON — Запускаем веб-сайт в GCP за 45 минут!
-# =============================================================================
-# Ваша задача: заполнить все места, помеченные TODO.
-# Не меняйте ничего, кроме указанных мест.
+# РЕШЕНИЕ — Terraform Hackathon
 # =============================================================================
 
-# TODO 1: Укажите ваш GCP Project ID
-# Найти его можно вверху страницы Cloud Console или выполнив:
-#   gcloud config get-value project
 provider "google" {
-  project = "УКАЖИ_СВОЙ_PROJECT_ID"
+  project = var.project_id
   region  = "europe-west1"
   zone    = "europe-west1-b"
 }
 
-# -----------------------------------------------------------------------------
-# Ресурс 1: Виртуальная сеть (VPC)
-# Этот блок готов — ничего менять не нужно.
-# -----------------------------------------------------------------------------
+variable "project_id" {
+  description = "Your GCP Project ID"
+  type        = string
+}
+
+variable "team_name" {
+  description = "Your team name"
+  type        = string
+  default     = "Dream Team"
+}
+
 resource "google_compute_network" "vpc_network" {
   name                    = "hackathon-network"
   auto_create_subnetworks = true
 }
 
-# -----------------------------------------------------------------------------
-# Ресурс 2: Правило файрвола
-# Разрешает входящий HTTP-трафик к нашему серверу.
-# -----------------------------------------------------------------------------
 resource "google_compute_firewall" "allow_http" {
   name    = "allow-http"
   network = google_compute_network.vpc_network.name
 
   allow {
     protocol = "tcp"
-    # TODO 2: Укажите номер порта для HTTP-трафика.
-    # Подсказка: стандартный порт для HTTP — это...
-    ports = ["КАКОЙ_ПОРТ"]
+    ports    = ["80"] # TODO 2 ответ: порт 80 — стандартный HTTP
   }
 
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["web-server"] # Правило применится к машинам с этим тегом
+  target_tags   = ["web-server"]
 }
 
-# -----------------------------------------------------------------------------
-# Ресурс 3: Виртуальная машина (Compute Engine)
-# Здесь запустится ваш веб-сервер.
-# -----------------------------------------------------------------------------
 resource "google_compute_instance" "web_server" {
   name         = "my-awesome-app"
-  machine_type = "e2-micro" # Самый маленький и бесплатный тип машины
+  machine_type = "e2-micro"
 
   boot_disk {
     initialize_params {
@@ -58,24 +49,16 @@ resource "google_compute_instance" "web_server" {
 
   network_interface {
     network = google_compute_network.vpc_network.name
-    access_config {
-      # Наличие этого пустого блока даёт машине публичный IP-адрес
-    }
+    access_config {}
   }
 
-  # TODO 3: Добавьте тег, чтобы правило файрвола применилось к этой машине.
-  # Посмотрите на поле target_tags в ресурсе google_compute_firewall выше —
-  # тег должен совпадать!
-  tags = ["ДОБАВЬ_ТЕГ"]
+  tags = ["web-server"] # TODO 3 ответ: тег совпадает с target_tags в firewall
 
-  # Скрипт выполняется автоматически при первом запуске машины.
-  # Он устанавливает Nginx и создаёт главную страницу сайта.
   metadata_startup_script = <<-EOF
     #!/bin/bash
     apt-get update
     apt-get install -y nginx
 
-    # TODO 4: Замените "Название Вашей Команды" на настоящее имя вашей команды!
     echo '<html>
     <head><style>
       body { font-family: sans-serif; display: flex; justify-content: center;
@@ -86,7 +69,7 @@ resource "google_compute_instance" "web_server" {
     </style></head>
     <body><div class="card">
       <h1>Hello from Terraform! 🚀</h1>
-      <p>Deployed by: <strong>Название Вашей Команды</strong></p>
+      <p>Deployed by: <strong>${var.team_name}</strong></p>
       <p>Infrastructure as Code — это просто!</p>
     </div></body></html>' > /var/www/html/index.html
 
