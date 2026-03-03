@@ -12,12 +12,12 @@ Internet
     │
     ▼
 [Compute Engine VM]  ← virtual machine running Nginx
-    │  (inside a VPC Network)
+    │  (inside a VPC Network + Subnet)
     ▼
 "Hello from Team [Your Team]!"
 ```
 
-**3 resources = 1 working website.**
+**4 resources = 1 working website.**
 
 ---
 
@@ -85,7 +85,7 @@ cloudshell edit main.tf
 
 | File | Description |
 |------|-------------|
-| `main.tf` | **Your task** — contains 4 places to fill in |
+| `main.tf` | **Your task** — complete the 5 TODOs here |
 | `outputs.tf` | Ready — prints your website URL after `apply` |
 | `versions.tf` | Ready — specifies Terraform and provider versions |
 | `CHEATSHEET.md` | Command reference and common errors |
@@ -94,33 +94,51 @@ cloudshell edit main.tf
 
 ## Step 3: Complete the TODOs in main.tf
 
-Open `main.tf` and find all `TODO` comments. There are 4:
+Open `main.tf` — there are 5 TODOs split across 3 stages.
 
-### TODO 1 — Set Your Project ID
+### TODO 1 & 2 — Set your Project ID and team name
 
 Find your Project ID:
 ```bash
 gcloud config get-value project
 ```
 
-Replace `YOUR_PROJECT_ID` with your actual project ID.
+Fill in both variables at the top of `main.tf`.
 
-### TODO 2 — Set the HTTP Port
+---
 
-In the `google_compute_firewall` block, replace `"WHICH_PORT"` with the correct port.
+### Stage 1 — VPC Network + Subnet (TODO 3 & 4)
 
-<details>
-<summary>Hint (click if you're stuck)</summary>
-HTTP runs on port <code>80</code>
-</details>
+Write both the VPC network and a subnet inside it.
+Key things to figure out:
+- what `auto_create_subnetworks = false` means and why
+- what IP range to use for the subnet
+- how to reference one resource from another
 
-### TODO 3 — Add a Tag to the VM
+📖 [google_compute_network docs](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_network)
+📖 [google_compute_subnetwork docs](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_subnetwork)
 
-The firewall rule only applies to machines that have a specific tag (`target_tags`). Check which tag is set in `google_compute_firewall` and use the same tag in `tags` for the virtual machine.
+---
 
-### TODO 4 — Enter Your Team Name
+### Stage 2 — Firewall Rule (TODO 5)
 
-In `metadata_startup_script`, replace `Your Team Name` with your team's name. This name will appear on the website!
+Write a firewall rule that allows HTTP traffic to reach your VM.
+Key things to figure out:
+- which protocol and port HTTP uses
+- what `target_tags` does, and what value to pick
+
+📖 [google_compute_firewall docs](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall)
+
+---
+
+### Stage 3 — Virtual Machine (TODO 6)
+
+Write the VM resource. The startup script is provided in the comments — copy it in.
+Key things to figure out:
+- how to connect the VM to your subnet (not the VPC directly)
+- how tags connect the VM to the firewall rule
+
+📖 [google_compute_instance docs](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_instance)
 
 ---
 
@@ -143,7 +161,7 @@ Terraform has been successfully initialized!
 terraform plan
 ```
 
-Terraform will show what it **plans** to create (nothing is created yet!). You should see `3 to add`.
+Terraform will show what it **plans** to create (nothing is created yet!). You should see `4 to add`.
 
 ---
 
@@ -158,7 +176,7 @@ Terraform will ask for confirmation — type `yes`.
 Wait 1-2 minutes. When done, you'll see:
 
 ```
-Apply complete! Resources: 3 added.
+Apply complete! Resources: 4 added.
 
 Outputs:
 
@@ -188,7 +206,7 @@ This is an important step — it ensures you don't get charged for cloud resourc
 terraform destroy
 ```
 
-Type `yes`. Terraform will delete all 3 resources in seconds.
+Type `yes`. Terraform will delete all 4 resources in seconds.
 
 **This is the magic of Infrastructure as Code:** creating and destroying infrastructure is as simple as running a single command.
 
@@ -198,7 +216,7 @@ Type `yes`. Terraform will delete all 3 resources in seconds.
 
 1. **Change the HTML**: Update the text in `metadata_startup_script`, then run `terraform apply` again. What happened?
 
-2. **Add a second tag**: Add another tag to the VM's `tags` — `["web-server", "hackathon"]` — and run `terraform plan`. How many resources will change?
+2. **Add a second firewall rule**: Allow SSH traffic (port 22) so you can connect to the VM directly. Write a new `google_compute_firewall` resource.
 
 3. **Explore the state**: Run `cat terraform.tfstate` — this is the file Terraform uses to track information about created resources.
 
