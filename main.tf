@@ -1,5 +1,5 @@
 # =============================================================================
-# РЕШЕНИЕ — Terraform Hackathon
+#  Terraform Hackathon
 # =============================================================================
 
 provider "google" {
@@ -11,26 +11,27 @@ provider "google" {
 variable "project_id" {
   description = "Your GCP Project ID"
   type        = string
+  default     = "ec-dev-428410"
 }
 
 variable "team_name" {
   description = "Your team name"
   type        = string
-  default     = "Dream Team"
+  default     = #TODO: your team name here
 }
 
 resource "google_compute_network" "vpc_network" {
-  name                    = "hackathon-network"
+  name                    = #TODO: your network name here
   auto_create_subnetworks = true
 }
 
 resource "google_compute_firewall" "allow_http" {
-  name    = "allow-http"
+  name    = #TODO: your firewall name here
   network = google_compute_network.vpc_network.name
 
   allow {
     protocol = "tcp"
-    ports    = ["80"] # TODO 2 ответ: порт 80 — стандартный HTTP
+    ports    = ["80"]
   }
 
   source_ranges = ["0.0.0.0/0"]
@@ -38,7 +39,7 @@ resource "google_compute_firewall" "allow_http" {
 }
 
 resource "google_compute_instance" "web_server" {
-  name         = "my-awesome-app"
+  name         = #TODO: your web server name here
   machine_type = "e2-micro"
 
   boot_disk {
@@ -52,7 +53,7 @@ resource "google_compute_instance" "web_server" {
     access_config {}
   }
 
-  tags = ["web-server"] # TODO 3 ответ: тег совпадает с target_tags в firewall
+  tags = ["web-server"]
 
   metadata_startup_script = <<-EOF
     #!/bin/bash
@@ -70,7 +71,7 @@ resource "google_compute_instance" "web_server" {
     <body><div class="card">
       <h1>Hello from Terraform! 🚀</h1>
       <p>Deployed by: <strong>${var.team_name}</strong></p>
-      <p>Infrastructure as Code — это просто!</p>
+      <p>Infrastructure as Code — it's simple</p>
     </div></body></html>' > /var/www/html/index.html
 
     systemctl restart nginx

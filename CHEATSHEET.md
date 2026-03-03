@@ -1,58 +1,64 @@
-# Шпаргалка по Terraform
+# Terraform Cheat Sheet
 
-## Основные команды
+## Core Commands
 
-| Команда | Что делает |
-|---------|-----------|
-| `terraform init` | Инициализирует проект, скачивает провайдеры |
-| `terraform plan` | Показывает, что изменится (ничего не создаёт!) |
-| `terraform apply` | Создаёт/изменяет инфраструктуру |
-| `terraform apply -auto-approve` | То же самое, без подтверждения |
-| `terraform destroy` | **Удаляет всю инфраструктуру** |
-| `terraform output` | Показывает значения output-переменных |
+| Command | What it does |
+|---------|-------------|
+| `terraform init` | Initializes the project, downloads providers |
+| `terraform plan` | Shows what will change (nothing is created yet!) |
+| `terraform apply` | Creates/updates infrastructure |
+| `terraform apply -auto-approve` | Same, without confirmation prompt |
+| `terraform destroy` | **Deletes all infrastructure** |
+| `terraform output` | Shows output values |
 
-## Полезные команды GCP
+## Useful GCP Commands
 
 ```bash
-# Узнать ваш Project ID
+# Get your Project ID
 gcloud config get-value project
 
-# Посмотреть запущенные виртуальные машины
+# List running virtual machines
 gcloud compute instances list
 
-# SSH на вашу машину (если понадобится)
+# SSH into your VM (if needed)
 gcloud compute ssh my-awesome-app --zone=europe-west1-b
 ```
 
-## Синтаксис Terraform (HCL)
+## Terraform Syntax (HCL)
 
 ```hcl
-# Комментарий
+# Comment
 
-# Ресурс: что создать
-resource "тип_ресурса" "локальное_имя" {
-  аргумент = "значение"
+# Resource: what to create
+resource "resource_type" "local_name" {
+  argument = "value"
 }
 
-# Ссылка на другой ресурс
+# Reference another resource
 resource "google_compute_instance" "vm" {
   network = google_compute_network.vpc_network.name
   #        ^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^ ^^^^
-  #        тип_ресурса              локальное   атрибут
-  #                                 имя
+  #        resource_type            local_name  attribute
 }
 ```
 
-## Частые ошибки
+## Common Errors
 
 **Error: Invalid provider configuration**
-→ Проверьте, что заменили `УКАЖИ_СВОЙ_PROJECT_ID` на реальный project_id
+→ Make sure you replaced `YOUR_PROJECT_ID` with your actual project ID
+
+**Error: oauth2: "invalid_grant" "Bad Request"**
+→ Cloud Shell session expired. Run:
+```bash
+gcloud auth application-default login
+```
+Then retry `terraform apply`.
 
 **Error: googleapi: Error 403**
-→ Убедитесь, что вы в Google Cloud Shell (авторизация автоматическая)
+→ Make sure you are using Google Cloud Shell (authentication is automatic there)
 
-**Сайт не открывается сразу после `apply`**
-→ Подождите 1-2 минуты — машина запускается и устанавливает Nginx
+**Site not loading right after `apply`**
+→ Wait 1-2 minutes — the VM is starting up and installing Nginx
 
 **Error: Error waiting for instance to create**
-→ Проверьте, что в `tags` стоит тот же тег, что в `target_tags` файрвола
+→ Check that the `tags` on the VM match the `target_tags` in the firewall rule
